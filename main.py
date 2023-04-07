@@ -1,9 +1,18 @@
-import praw
-import json
+import redditApi
+import screenshots
+import tts
 
-settings = json.loads(open("settings.json", "r", encoding="utf8").read())
+postData = {"id": None, "title": None, "comments": []}
 
-reddit = praw.Reddit(client_id=settings["clientId"], client_secret=settings["clientSecret"], user_agent=settings["userAgent"])
-
-for post in reddit.subreddit("AskReddit").hot(limit=10):
-    print(post.title)
+post = redditApi.getPosts("askreddit", 1)[0]
+postData["id"]=post.id
+postData["title"]=post.title
+screenshots.screenPost(post.url, post.id)
+tts.say(post.title, f"post_{post.id}")
+commentIds = []
+for comment in redditApi.getComments(post, 3):
+    postData["comments"].append({"id": comment.id, "text": comment.body})
+    tts.say(comment.body, f"comment_{comment.id}")
+    commentIds.append(comment.id)
+screenshots.screenComments(post.url, commentIds)
+print(postData)
