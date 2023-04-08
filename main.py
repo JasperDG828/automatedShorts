@@ -1,18 +1,16 @@
 import redditApi
 import screenshots
 import tts
+import video
 
-postData = {"id": None, "title": None, "comments": []}
+commentCount = 3
 
 post = redditApi.getPosts("askreddit", 1)[0]
-postData["id"]=post.id
-postData["title"]=post.title
 screenshots.screenPost(post.url, post.id)
 tts.say(post.title, f"post_{post.id}")
 commentIds = []
-for comment in redditApi.getComments(post, 3):
-    postData["comments"].append({"id": comment.id, "text": comment.body})
+for comment in redditApi.getComments(post, commentCount):
     tts.say(comment.body, f"comment_{comment.id}")
     commentIds.append(comment.id)
 screenshots.screenComments(post.url, commentIds)
-print(postData)
+video.generateVideo(post.id, commentIds)
